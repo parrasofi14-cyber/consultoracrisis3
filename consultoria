@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Consultora en Crisis | Andina Motion S.A. — Simulador de Comercio Internacional</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --c-violet-dark: #16062E;
+      --c-violet-mid: #280B54;
+      --c-fuchsia: #FF1E8A;
+      --c-yellow: #FFE600;
+      --c-turquoise: #00F0FF;
+      --c-orange: #FF6B00;
+      --c-purple: #8B2CF5;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--c-violet-dark);
+      color: #FFFFFF;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .font-game {
+      font-family: 'Fredoka', sans-serif;
+      letter-spacing: 0.01em;
+    }
+    /* Animated background shapes */
+    .bg-crisis-mesh {
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 30, 138, 0.28) 0%, transparent 42%),
+        radial-gradient(circle at 88% 15%, rgba(0, 240, 255, 0.24) 0%, transparent 40%),
+        radial-gradient(circle at 80% 82%, rgba(255, 107, 0, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 20% 85%, rgba(139, 44, 245, 0.35) 0%, transparent 45%),
+        linear-gradient(145deg, #130429 0%, #24084E 55%, #160530 100%);
+    }
+    /* Game card neo-arcade look */
+    .game-card {
+      background: rgba(34, 11, 72, 0.88);
+      backdrop-filter: blur(14px);
+      border: 3px solid rgba(255, 255, 255, 0.18);
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 0 rgba(10, 2, 24, 0.75), 0 20px 40px rgba(0, 0, 0, 0.45);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .game-btn {
+      font-family: 'Fredoka', sans-serif;
+      border: 3px solid #120324;
+      border-radius: 1.15rem;
+      box-shadow: 0 6px 0 #120324;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .game-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 #120324;
+      filter: brightness(1.06);
+    }
+    .game-btn:active:not(:disabled) {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #120324;
+    }
+    .game-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: 0 3px 0 rgba(18, 3, 36, 0.5);
+    }
+    /* Round specific border & glow accents */
+    .theme-r1 {
+      --round-accent: #FF1E8A;
+      --round-soft: rgba(255, 30, 138, 0.18);
+    }
+    .theme-r2 {
+      --round-accent: #00F0FF;
+      --round-soft: rgba(0, 240, 255, 0.18);
+    }
+    .theme-r3 {
+      --round-accent: #FFE600;
+      --round-soft: rgba(255, 230, 0, 0.18);
+    }
+    .theme-r4 {
+      --round-accent: #FF6B00;
+      --round-soft: rgba(255, 107, 0, 0.20);
+    }
+    .round-banner {
+      border-color: var(--round-accent, #FF1E8A);
+      box-shadow: 0 8px 0 rgba(10, 2, 24, 0.8), 0 0 28px var(--round-soft, rgba(255, 30, 138, 0.25));
+    }
+    .choice-pill {
+      border: 2.5px solid rgba(255, 255, 255, 0.2);
+      background: rgba(20, 6, 44, 0.75);
+      border-radius: 1.1rem;
+      transition: all 0.16s ease;
+    }
+    .choice-pill:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    .choice-pill.selected {
+      border-color: var(--round-accent, #FFE600);
+      background: var(--round-soft, rgba(255, 230, 0, 0.2));
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.6), 0 0 18px var(--round-soft, rgba(255, 230, 0, 0.35));
+    }
+    @keyframes popScore {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popScore 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes pulseUrgent {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .timer-urgent {
+      animation: pulseUrgent 1s infinite ease-in-out;
+    }
+    /* Projector mode adjustments */
+    body.projector-mode .hide-on-projector {
+      display: none !important;
+    }
+    body.projector-mode .projector-scale {
+      font-size: 1.18rem;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #14052B; }
+    ::-webkit-scrollbar-thumb { background: #FF1E8A; border-radius: 99px; }
+  </style>
+</head>
+<body class="bg-crisis-mesh selection:bg-[#FF1E8A] selection:text-white">
+
+  <!-- FLOATING CONFETTI / SCORE BURST LAYER -->
+  <div id="fxLayer" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+
+  <!-- TOAST NOTIFICATION LAYER -->
+  <div id="toastContainer" class="fixed top-4 right-4 left-4 sm:left-auto sm:w-96 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 border-b-2 border-white/15 bg-[#14042B]/90 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF1E8A] via-[#FF6B00] to-[#FFE600] p-0.5 shadow-md flex items-center justify-center border-2 border-[#120324]">
+          <span class="text-2xl" role="img" aria-label="Rayo">⚡</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-game text-lg sm:text-xl font-bold tracking-tight text-white">CONSULTORA EN CRISIS</span>
+            <span id="syncBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40">EN VIVO</span>
+          </div>
+          <p class="text-xs text-white/75 hidden sm:block">Caso: <strong class="text-[#FFE600]">Andina Motion S.A.</strong> (Colombia ➔ EE. UU. en 5 años)</p>
+        </div>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Team Score Pill (visible when playing) -->
+        <div id="headerTeamStatus" class="hidden items-center gap-2 bg-white/10 border-2 border-white/20 rounded-xl px-3 py-1">
+          <span id="headerTeamName" class="font-game text-sm text-[#00F0FF] truncate max-w-[120px] sm:max-w-[180px]">Equipo</span>
+          <span class="text-xs text-white/50">|</span>
+          <span class="font-game text-base text-[#FFE600]"><span id="headerTeamScore">0</span><span class="text-xs text-white/70">/40 pts</span></span>
+        </div>
+
+        <!-- Sound Toggle -->
+        <button id="btnToggleSound" type="button" class="game-btn bg-[#2C0E5E] text-white px-3 py-1.5 text-xs sm:text-sm flex items-center gap-1" title="Activar/Silenciar efectos de sonido">
+          <span id="soundIcon">🔊</span>
+          <span class="hidden md:inline">Sonido</span>
+        </button>
+
+        <!-- Teacher Fast-Forward / Test Mode Toggle -->
+        <button id="btnOpenTestTools" type="button" class="game-btn bg-[#FF6B00] text-[#120324] font-bold px-3 py-1.5 text-xs sm:text-sm flex items-center gap-1" title="Herramientas de prueba rápida y configuración">
+          <span>🛠️</span>
+          <span>Config / Prueba</span>
+        </button>
+
+        <!-- Switch between Player & Host Panel -->
+        <button id="btnSwitchHostView" type="button" class="game-btn bg-[#FF1E8A] text-white font-bold px-3 py-1.5 text-xs sm:text-sm flex items-center gap-1">
+          <span>👑</span>
+          <span id="btnSwitchHostLabel">Panel: Paula, Caterin y Jorge</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-5xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: LOBBY / TEAM REGISTRATION          -->
+    <!-- ========================================== -->
+    <section id="viewLobby" class="space-y-6">
+      <!-- Hero Briefing Card -->
+      <div class="game-card p-5 sm:p-8 border-[#FF1E8A] relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-[#FF1E8A]/20 blur-2xl pointer-events-none"></div>
+        <div class="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+          <div class="space-y-3 max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFE600] text-[#120324] font-game text-xs sm:text-sm font-bold uppercase">
+              <span>🚴‍♂️ Misión Internacional • 4 Rondas • 40 Puntos</span>
+            </div>
+            <h1 class="font-game text-3xl sm:text-5xl font-bold leading-tight text-white">
+              ¡Salven la expansión de <span class="text-[#00F0FF] underline decoration-[#FF1E8A] decoration-4">Andina Motion S.A.</span>!
+            </h1>
+            <p class="text-sm sm:text-base text-white/90 leading-relaxed">
+              Son una firma consultora contratada de urgencia por <strong>Andina Motion S.A.</strong>, fabricante colombiano de motores y baterías inteligentes para bicicletas eléctricas. El directorio quiere conquistar el mercado de <strong>Estados Unidos en 5 años</strong>, pero el CEO, <strong>Don Alejandro Vega</strong>, no tolera respuestas genéricas.
+            </p>
+          </div>
+          <!-- Mini Rules Box -->
+          <div class="w-full md:w-72 bg-[#14042B]/90 border-2 border-[#00F0FF] rounded-2xl p-4 space-y-2.5 shrink-0">
+            <div class="font-game text-[#00F0FF] text-base flex items-center gap-1.5">
+              <span>⏱️</span> <span>REGLAS DE TIEMPO</span>
+            </div>
+            <ul class="text-xs sm:text-sm space-y-1.5 text-white/90">
+              <li class="flex items-start gap-2"><span class="text-[#FFE600] font-bold">15 min</span> <span>por ronda con reloj en vivo.</span></li>
+              <li class="flex items-start gap-2"><span class="text-[#FF1E8A] font-bold">7 min</span> <span>mínimos de debate antes de habilitar el envío al CEO.</span></li>
+              <li class="flex items-start gap-2"><span class="text-[#00F0FF] font-bold">2:30 min</span> <span>y mínimo 15 caracteres para responder la contrapregunta del CEO.</span></li>
+              <li class="flex items-start gap-2"><span class="text-[#FF6B00] font-bold">Pitch 2m</span> <span>al finalizar las 4 rondas.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 4 Rounds Preview Pills -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+          <div class="p-3 rounded-xl bg-[#FF1E8A]/20 border-2 border-[#FF1E8A]">
+            <div class="text-xs font-bold text-[#FF1E8A] uppercase">Ronda 1 • 10 pts</div>
+            <div class="font-game text-sm sm:text-base text-white mt-0.5">🔮 Escenarios PESTEL</div>
+          </div>
+          <div class="p-3 rounded-xl bg-[#00F0FF]/20 border-2 border-[#00F0FF]">
+            <div class="text-xs font-bold text-[#00F0FF] uppercase">Ronda 2 • 10 pts</div>
+            <div class="font-game text-sm sm:text-base text-white mt-0.5">🚢 Cadena de Suministro</div>
+          </div>
+          <div class="p-3 rounded-xl bg-[#FFE600]/20 border-2 border-[#FFE600]">
+            <div class="text-xs font-bold text-[#FFE600] uppercase">Ronda 3 • 10 pts</div>
+            <div class="font-game text-sm sm:text-base text-white mt-0.5">🤖 Gobernanza IA & Datos</div>
+          </div>
+          <div class="p-3 rounded-xl bg-[#FF6B00]/20 border-2 border-[#FF6B00]">
+            <div class="text-xs font-bold text-[#FF6B00] uppercase">Ronda 4 • 10 pts</div>
+            <div class="font-game text-sm sm:text-base text-white mt-0.5">🌪️ Crisis & Ambidestreza</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration & Resume Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Team Join Form -->
+        <div class="lg:col-span-7 game-card p-5 sm:p-7 border-[#FFE600]">
+          <h2 class="font-game text-2xl sm:text-3xl text-[#FFE600] mb-1">🚀 Registrar Consultora</h2>
+          <p class="text-xs sm:text-sm text-white/80 mb-5">Entren desde su sala privada de Microsoft Teams. Un integrante registra el equipo o cada miembro sigue el marcador en vivo.</p>
+
+          <form id="formJoinTeam" class="space-y-4">
+            <div>
+              <label for="inputTeamName" class="block text-sm font-bold text-white mb-1.5">Nombre de tu Firma Consultora *</label>
+              <input id="inputTeamName" type="text" required maxlength="40" placeholder="Ej. Alfa Estrategia Global, Andes NextGen..." class="w-full px-4 py-3.5 rounded-xl bg-[#120324] border-2 border-white/30 text-white text-base sm:text-lg font-bold focus:outline-none focus:border-[#FFE600]" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="selectRoomNumber" class="block text-sm font-bold text-white mb-1.5">Sala de Microsoft Teams</label>
+                <select id="selectRoomNumber" class="w-full px-4 py-3.5 rounded-xl bg-[#120324] border-2 border-white/30 text-white text-base font-semibold focus:outline-none focus:border-[#00F0FF]">
+                  <option value="Sala 1">Sala Privada 1</option>
+                  <option value="Sala 2">Sala Privada 2</option>
+                  <option value="Sala 3">Sala Privada 3</option>
+                  <option value="Sala 4">Sala Privada 4</option>
+                </select>
+              </div>
+              <div>
+                <label for="inputMembers" class="block text-sm font-bold text-white mb-1.5">Integrantes (opcional)</label>
+                <input id="inputMembers" type="text" maxlength="80" placeholder="Ej. Laura, Mateo, Sofía, Juan" class="w-full px-4 py-3.5 rounded-xl bg-[#120324] border-2 border-white/30 text-white text-base focus:outline-none focus:border-[#00F0FF]" />
+              </div>
+            </div>
+
+            <button type="submit" class="w-full game-btn bg-[#FFE600] text-[#120324] text-lg sm:text-xl font-bold py-4 px-6 mt-2 flex items-center justify-center gap-2">
+              <span>🔥 ¡ENTRAR A LA SALA DE JUNTA!</span>
+            </button>
+          </form>
+
+          <!-- Quick Demo Populate for Testing -->
+          <div class="mt-5 pt-4 border-t border-white/15 flex flex-wrap items-center justify-between gap-2 text-xs text-white/75">
+            <span>¿Quieres probar cómo se ven los 4 equipos jugando en vivo?</span>
+            <button id="btnSeedDemoTeams" type="button" class="underline font-bold text-[#00F0FF] hover:text-[#FFE600]">✨ Cargar 4 equipos de demostración</button>
+          </div>
+        </div>
+
+        <!-- Active Teams / Resume Box -->
+        <div class="lg:col-span-5 game-card p-5 sm:p-7 border-[#00F0FF] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="font-game text-xl sm:text-2xl text-[#00F0FF]">🏆 Equipos en Sala</h2>
+              <span id="lobbyTeamCount" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#00F0FF]/20 text-[#00F0FF]">0 equipos</span>
+            </div>
+            <p class="text-xs text-white/75 mb-4">Si tu equipo ya inició partida o cambiaste de celular, toca tu consultora para retomar donde iban:</p>
+            <div id="lobbyTeamsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="mt-5 pt-4 border-t border-white/15 flex items-center justify-between text-xs text-white/70">
+            <span>¿Equipo anfitrión (Paula, Caterin y Jorge)?</span>
+            <button id="btnLobbyGoHost" type="button" class="font-bold text-[#FF1E8A] hover:underline">Abrir Marcador con ?host=CLAVE ➔</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: ACTIVE GAMEPLAY (4 ROUNDS)         -->
+    <!-- ========================================== -->
+    <section id="viewGame" class="hidden space-y-6">
+
+      <!-- Round Progress Stepper & Sticky Countdown Bar -->
+      <div id="roundThemeContainer" class="theme-r1 space-y-5">
+
+        <!-- Stepper + Timer Header Card -->
+        <div class="game-card round-banner p-4 sm:p-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <!-- Stepper Pills -->
+            <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 md:pb-0">
+              <div id="stepPill1" class="px-3 py-1.5 rounded-xl font-game text-xs sm:text-sm font-bold border-2">R1 • PESTEL</div>
+              <div id="stepPill2" class="px-3 py-1.5 rounded-xl font-game text-xs sm:text-sm font-bold border-2">R2 • Suministro</div>
+              <div id="stepPill3" class="px-3 py-1.5 rounded-xl font-game text-xs sm:text-sm font-bold border-2">R3 • IA & Datos</div>
+              <div id="stepPill4" class="px-3 py-1.5 rounded-xl font-game text-xs sm:text-sm font-bold border-2">R4 • Sorpresa</div>
+              <div id="stepPill5" class="px-3 py-1.5 rounded-xl font-game text-xs sm:text-sm font-bold border-2">🎤 Pitch</div>
+            </div>
+
+            <!-- Main 15-Minute Round Timer -->
+            <div class="flex items-center justify-between md:justify-end gap-3 bg-[#120324] border-2 border-white/25 rounded-2xl px-4 py-2">
+              <div class="text-left">
+                <div class="text-[10px] uppercase tracking-wider text-white/70 font-bold">Tiempo de Ronda (15 min)</div>
+                <div id="roundLockHint" class="text-xs font-bold text-[#FFE600]">🔒 Envío se habilita a los 08:00</div>
+              </div>
+              <div id="roundClockDisplay" class="font-game text-2xl sm:text-3xl font-bold text-white tabular-nums px-2 py-0.5 rounded-lg bg-white/10">15:00</div>
+            </div>
+          </div>
+
+          <!-- 7-Minute Minimum Thinking Progress Bar -->
+          <div id="submitUnlockBarWrapper" class="mt-3 pt-3 border-t border-white/15">
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span id="submitUnlockStatusText" class="font-bold text-[#FFE600]">⏳ Tiempo mínimo de debate en equipo (7:00 min requeridos antes de enviar)</span>
+              <div class="flex items-center gap-2">
+                <span id="submitUnlockCountdown" class="font-mono font-bold text-white">Faltan 07:00</span>
+                <button id="btnQuickUnlockRound" type="button" class="text-[11px] px-2 py-0.5 rounded bg-white/15 hover:bg-[#FFE600] hover:text-[#120324] font-bold transition" title="Adelantar reloj para pruebas">⚡ Adelantar (Prueba)</button>
+              </div>
+            </div>
+            <div class="w-full h-3 bg-[#120324] rounded-full overflow-hidden border border-white/20">
+              <div id="submitUnlockProgressFill" class="h-full bg-gradient-to-r from-[#FF1E8A] via-[#FF6B00] to-[#FFE600] transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROUND CONTENT CARD -->
+        <div id="roundDecisionCard" class="game-card round-banner p-5 sm:p-7 space-y-6">
+          <!-- Dynamic Header injected by JS -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-white/15 pb-4">
+            <div>
+              <span id="roundBadgeLabel" class="inline-block text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#FF1E8A] text-white mb-1.5">RONDA 1 DE 4 • MÁXIMO 10 PUNTOS</span>
+              <h2 id="roundTitle" class="font-game text-2xl sm:text-4xl font-bold text-white">Escenarios Estratégicos con PESTEL</h2>
+            </div>
+            <div class="bg-[#120324] border-2 border-white/20 rounded-2xl px-4 py-2.5 text-xs sm:text-sm max-w-xs">
+              <span class="font-bold text-[#FFE600]">👔 Don Alejandro (CEO):</span>
+              <span id="roundCeoQuote" class="text-white/90 italic block mt-0.5">"No quiero adivinos, quiero estrategas. ¿Qué variables macro pueden quebrar o disparar a Andina Motion en EE. UU.?"</span>
+            </div>
+          </div>
+
+          <!-- Context Box -->
+          <div id="roundContextBox" class="p-4 rounded-2xl bg-[#120324]/85 border-2 border-white/15 text-sm sm:text-base text-white/90 leading-relaxed"></div>
+
+          <!-- Interactive Form Controls for Current Round -->
+          <div id="roundInteractiveArea" class="space-y-5"></div>
+
+          <!-- Submit Button to CEO -->
+          <div class="pt-3 border-t-2 border-white/15 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div id="roundValidationMsg" class="text-xs sm:text-sm text-white/80 font-medium">
+              Completa todos los campos y espera a que concluyan los 7 minutos de análisis.
+            </div>
+            <button id="btnSubmitRound" type="button" disabled class="game-btn bg-[#FFE600] text-[#120324] font-bold text-base sm:text-lg px-7 py-4 flex items-center justify-center gap-2 shrink-0">
+              <span id="btnSubmitRoundIcon">🔒</span>
+              <span id="btnSubmitRoundText">Esperando 7 min de debate...</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CEO EVALUATION + COUNTER-QUESTION CARD (Shown after submitting round) -->
+        <div id="ceoEvaluationCard" class="hidden game-card p-5 sm:p-8 border-[#FFE600] space-y-6">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-white/15 pb-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FFE600] to-[#FF6B00] border-3 border-[#120324] flex items-center justify-center text-4xl shrink-0 shadow-lg">
+                👔
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-[#FFE600] text-[#120324]">Veredicto del Directorio</span>
+                  <span id="evalSourceBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white/15 text-white/90">IA Gemini / Rúbrica CEO</span>
+                </div>
+                <h3 class="font-game text-2xl sm:text-3xl text-white mt-1">Don Alejandro Vega — CEO</h3>
+              </div>
+            </div>
+
+            <!-- Score Medallion -->
+            <div class="bg-[#120324] border-3 border-[#FFE600] rounded-2xl px-5 py-3 text-center shrink-0 self-stretch sm:self-auto flex flex-col justify-center">
+              <div class="text-[11px] uppercase font-bold text-white/70">Puntaje Ronda</div>
+              <div class="font-game text-3xl sm:text-4xl font-bold text-[#FFE600] animate-pop"><span id="ceoRoundScore">8</span><span class="text-lg text-white/70">/10</span></div>
+            </div>
+          </div>
+
+          <!-- Praise, Critique & Blind Spot Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 rounded-2xl bg-emerald-500/15 border-2 border-emerald-400/60">
+              <div class="font-game text-emerald-300 text-base flex items-center gap-1.5 mb-1">
+                <span>👏</span> <span>Lo que me gustó (Elogio)</span>
+              </div>
+              <p id="ceoPraiseText" class="text-sm text-white/95 leading-relaxed"></p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-[#FF1E8A]/15 border-2 border-[#FF1E8A]/70">
+              <div class="font-game text-[#FF85B3] text-base flex items-center gap-1.5 mb-1">
+                <span>⚡</span> <span>Mi crítica directa</span>
+              </div>
+              <p id="ceoCritiqueText" class="text-sm text-white/95 leading-relaxed"></p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-[#FF6B00]/15 border-2 border-[#FF6B00]/70">
+              <div class="font-game text-[#FFB074] text-base flex items-center gap-1.5 mb-1">
+                <span>⚠️</span> <span>El riesgo que NO vieron</span>
+              </div>
+              <p id="ceoBlindSpotText" class="text-sm text-white/95 leading-relaxed"></p>
+            </div>
+          </div>
+
+          <!-- Mandatory Counter-Question Section (2:30 timer + 15 chars min) -->
+          <div class="p-5 rounded-2xl bg-[#120324] border-3 border-[#00F0FF] space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="font-game text-lg sm:text-xl text-[#00F0FF] flex items-center gap-2">
+                <span>🎯 CONTRAPREGUNTA DEL CEO (Obligatoria para avanzar)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-white/75">Desbloqueo en:</span>
+                <span id="counterClockDisplay" class="font-game text-lg font-bold px-3 py-0.5 rounded-lg bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40 tabular-nums">02:30</span>
+                <button id="btnQuickUnlockCounter" type="button" class="text-[11px] px-2 py-0.5 rounded bg-white/15 hover:bg-[#00F0FF] hover:text-[#120324] font-bold transition" title="Adelantar 2:30 para pruebas">⚡ Adelantar</button>
+              </div>
+            </div>
+
+            <blockquote id="ceoCounterQuestionText" class="p-3.5 rounded-xl bg-white/5 border-l-4 border-[#FFE600] text-base sm:text-lg font-semibold text-white italic"></blockquote>
+
+            <div>
+              <label for="inputCounterAnswer" class="block text-xs sm:text-sm font-bold text-white/90 mb-1.5">
+                Respuesta de defensa de la consultora (mínimo 15 caracteres + esperar 2:30 min
